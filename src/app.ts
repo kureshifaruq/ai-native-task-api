@@ -11,7 +11,7 @@ import {
 
 export function buildApp() {
   const app = Fastify({
-    logger: false,
+    logger: true,
   });
 
   const taskIdSchema = z.string().uuid();
@@ -29,6 +29,40 @@ export function buildApp() {
     (data) => Object.keys(data).length > 0,
     { message: 'At least one field must be provided' },
   );
+
+  // Centralized error handler
+  app.setErrorHandler((error, request, reply) => {
+    request.log.error(error);
+
+    const statusCode =
+      typeof error === 'object' &&
+        error !== null &&
+        'statusCode' in error &&
+        typeof error.statusCode === 'number' &&
+        Number.isInteger(error.statusCode) &&
+        error.statusCode >= 400 &&
+        error.statusCode <= 599
+        ? error.statusCode
+        : 500;
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'An unexpected error occurred';
+
+    return reply.code(statusCode).send({
+      error: {
+        code:
+          statusCode >= 500
+            ? 'INTERNAL_SERVER_ERROR'
+            : 'REQUEST_ERROR',
+        message:
+          statusCode >= 500
+            ? 'An unexpected error occurred'
+            : message,
+      },
+    });
+  });
 
   app.get('/health', async () => ({
     status: 'ok',
