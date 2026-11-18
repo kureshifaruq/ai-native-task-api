@@ -8,6 +8,7 @@ import {
   updateTask,
   deleteTask,
 } from './repositories/task.repository.js';
+import { executeAITaskCommand } from './services/ai-task.service.js';
 
 export function buildApp() {
   const app = Fastify({
@@ -194,6 +195,34 @@ export function buildApp() {
 
     return reply.code(204).send();
   });
+
+
+  // AI assistant endpoint
+  app.post('/ai/ask', async (request, reply) => {
+    const schema = z.object({
+      prompt: z.string().trim().min(1).max(2000),
+    });
+
+    const result = schema.safeParse(request.body);
+
+    if (!result.success) {
+      return reply.code(400).send({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'A valid prompt is required',
+        },
+      });
+    }
+
+    const response = await executeAITaskCommand(
+      result.data.prompt,
+    );
+
+    return reply.send({
+      data: response,
+    });
+  });
+
 
   return app;
 }
