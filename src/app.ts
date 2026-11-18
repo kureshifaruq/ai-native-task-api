@@ -223,6 +223,56 @@ export function buildApp() {
     });
   });
 
+  app.post('/ai/confirm-delete', async (request, reply) => {
+    const schema = z.object({
+      taskId: z.string().uuid(),
+      confirm: z.literal(true),
+    });
+
+    const result = schema.safeParse(request.body);
+
+    if (!result.success) {
+      return reply.code(400).send({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'A valid task ID and confirmation are required',
+        },
+      });
+    }
+
+    const task = await getTaskById(result.data.taskId);
+
+    if (!task) {
+      return reply.code(404).send({
+        error: {
+          code: 'TASK_NOT_FOUND',
+          message: 'The requested task was not found',
+        },
+      });
+    }
+
+    const deleted = await deleteTask(result.data.taskId);
+
+    if (!deleted) {
+      return reply.code(404).send({
+        error: {
+          code: 'TASK_NOT_FOUND',
+          message: 'The requested task was not found',
+        },
+      });
+    }
+
+    return reply.send({
+      data: {
+        message: 'Task deleted successfully.',
+        task: {
+          id: task.id,
+          title: task.title,
+        },
+      },
+    });
+  });
+
 
   return app;
 }

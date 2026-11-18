@@ -153,12 +153,11 @@ ${prompt}
         };
       }
 
-      await deleteTask(data.taskId);
-
       return {
-        message: 'Task deleted successfully.',
+        message: 'Deletion confirmation required.',
+        confirmationRequired: true,
         data: {
-          id: data.taskId,
+          id: existingTask.id,
           title: existingTask.title,
         },
       };
