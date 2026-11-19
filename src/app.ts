@@ -9,10 +9,26 @@ import {
   deleteTask,
 } from './repositories/task.repository.js';
 import { executeAITaskCommand } from './services/ai-task.service.js';
+import swagger from '@fastify/swagger';
+import swaggerUI from '@fastify/swagger-ui';
 
-export function buildApp() {
+export async function buildApp() {
   const app = Fastify({
     logger: true,
+  });
+
+  await app.register(swagger, {
+    openapi: {
+      info: {
+        title: 'AI-native Task API',
+        description: 'Task management API with AI-powered natural language commands',
+        version: '1.0.0',
+      },
+    },
+  });
+
+  await app.register(swaggerUI, {
+    routePrefix: '/docs',
   });
 
   const taskIdSchema = z.string().uuid();
@@ -65,7 +81,21 @@ export function buildApp() {
     });
   });
 
-  app.get('/health', async () => ({
+  app.get('/health', {
+    schema: {
+      tags: ['Health'],
+      summary: 'Check API health',
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            status: { type: 'string' },
+            service: { type: 'string' },
+          },
+        },
+      },
+    },
+  }, async () => ({
     status: 'ok',
     service: 'ai-native-task-api',
   }));
@@ -198,7 +228,26 @@ export function buildApp() {
 
 
   // AI assistant endpoint
-  app.post('/ai/ask', async (request, reply) => {
+
+  // AI assistant endpoint
+  app.post('/ai/ask', {
+    schema: {
+      tags: ['AI Assistant'],
+      summary: 'Execute a natural-language task command',
+      description: 'Use natural language to create, list, update, or request deletion of tasks.',
+      body: {
+        type: 'object',
+        required: ['prompt'],
+        properties: {
+          prompt: {
+            type: 'string',
+            description: 'Natural-language task instruction',
+            default: 'Create a task to learn Docker',
+          },
+        },
+      },
+    },
+  }, async (request, reply) => {
     const schema = z.object({
       prompt: z.string().trim().min(1).max(2000),
     });
@@ -223,7 +272,31 @@ export function buildApp() {
     });
   });
 
-  app.post('/ai/confirm-delete', async (request, reply) => {
+
+  app.post('/ai/confirm-delete', {
+    schema: {
+      tags: ['AI Assistant'],
+      summary: 'Confirm task deletion',
+      description: 'Permanently delete a task after explicit confirmation.',
+      body: {
+        type: 'object',
+        required: ['taskId', 'confirm'],
+        properties: {
+          taskId: {
+            type: 'string',
+            format: 'uuid',
+            description: 'ID of the task to delete',
+            default: 'bcdfed45-4ba0-4522-a522-0135ccd75be5',
+          },
+          confirm: {
+            type: 'boolean',
+            description: 'Must be true to confirm deletion',
+            default: true,
+          },
+        },
+      },
+    },
+  }, async (request, reply) => {
     const schema = z.object({
       taskId: z.string().uuid(),
       confirm: z.literal(true),

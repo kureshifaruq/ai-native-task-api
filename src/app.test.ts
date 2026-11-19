@@ -17,7 +17,7 @@ describe('AI-native Task API', () => {
   beforeEach(async () => {
     // Ensure each test starts with an empty tasks table.
     await pool.query('TRUNCATE TABLE tasks');
-    app = buildApp();
+    app = await buildApp();
   });
 
   afterEach(async () => {
