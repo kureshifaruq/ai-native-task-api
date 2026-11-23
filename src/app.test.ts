@@ -216,4 +216,67 @@ describe('AI-native Task API', () => {
     expect(response.statusCode).toBe(404);
     expect(response.json().error.code).toBe('TASK_NOT_FOUND');
   });
+
+
+  it('deletes a task after explicit confirmation', async () => {
+    const taskId = await createTestTask('Task to delete');
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/ai/confirm-delete',
+      payload: {
+        taskId,
+        confirm: true,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().data.message).toBe(
+      'Task deleted successfully.',
+    );
+
+    const getResponse = await app.inject({
+      method: 'GET',
+      url: `/tasks/${taskId}`,
+    });
+
+    expect(getResponse.statusCode).toBe(404);
+  });
+
+  it('rejects deletion without explicit confirmation', async () => {
+    const taskId = await createTestTask('Task to keep');
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/ai/confirm-delete',
+      payload: {
+        taskId,
+        confirm: false,
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+
+    const getResponse = await app.inject({
+      method: 'GET',
+      url: `/tasks/${taskId}`,
+    });
+
+    expect(getResponse.statusCode).toBe(200);
+  });
+
+  it('returns 404 when confirming deletion of a nonexistent task', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/ai/confirm-delete',
+      payload: {
+        taskId: '00000000-0000-4000-8000-000000000001',
+        confirm: true,
+      },
+    });
+
+    expect(response.statusCode).toBe(404);
+    expect(response.json().error.code).toBe('TASK_NOT_FOUND');
+  });
+
 });
