@@ -56,12 +56,12 @@ export async function buildApp() {
 
     const statusCode =
       typeof error === 'object' &&
-      error !== null &&
-      'statusCode' in error &&
-      typeof error.statusCode === 'number' &&
-      Number.isInteger(error.statusCode) &&
-      error.statusCode >= 400 &&
-      error.statusCode <= 599
+        error !== null &&
+        'statusCode' in error &&
+        typeof error.statusCode === 'number' &&
+        Number.isInteger(error.statusCode) &&
+        error.statusCode >= 400 &&
+        error.statusCode <= 599
         ? error.statusCode
         : 500;
 
@@ -209,11 +209,59 @@ export async function buildApp() {
   );
 
   // Get all tasks
-  app.get('/tasks', async () => {
-    const tasks = await getTasks();
 
-    return { data: tasks };
-  });
+  // Get all tasks
+  app.get(
+    '/tasks',
+    {
+      schema: {
+        tags: ['Tasks'],
+        summary: 'Get all tasks',
+        description: 'Retrieves all tasks stored in PostgreSQL.',
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              data: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    title: { type: 'string' },
+                    description: { type: 'string' },
+                    status: {
+                      type: 'string',
+                      enum: ['pending', 'in_progress', 'completed'],
+                    },
+                    createdAt: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+          500: {
+            type: 'object',
+            properties: {
+              error: {
+                type: 'object',
+                properties: {
+                  code: { type: 'string' },
+                  message: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async () => {
+      const tasks = await getTasks();
+
+      return { data: tasks };
+    },
+  );
+
 
   // Get task by ID
   app.get('/tasks/:id', async (request, reply) => {
