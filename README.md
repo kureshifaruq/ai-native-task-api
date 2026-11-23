@@ -1,23 +1,31 @@
 # AI-Native Task API
 
-A REST API built with **TypeScript, Fastify, Zod, and Vitest** to demonstrate clean API design, request validation, automated testing, and reliable error handling.
+A backend REST API built with **TypeScript, Fastify, PostgreSQL, Zod, and Gemini AI**. This project demonstrates API development, persistent data storage, request validation, automated testing, and AI-powered task management.
 
 ## Features
 
-- Health check endpoint
-- Create and list tasks
-- Request validation using Zod
-- Structured validation error responses
+- Complete task CRUD operations
+- PostgreSQL database integration for persistent task storage
+- Request validation using Zod and Fastify schemas
+- Structured API error handling
+- Gemini AI integration for natural-language task management
+- AI-powered task deletion with explicit confirmation
+- Swagger API documentation
 - Automated tests using Vitest
 - TypeScript strict type checking
 
 ## Tech Stack
 
-- Node.js
-- TypeScript
-- Fastify
-- Zod
-- Vitest
+| Technology | Purpose |
+|---|---|
+| Node.js | Runtime environment |
+| TypeScript | Type-safe development |
+| Fastify | REST API framework |
+| PostgreSQL | Persistent database |
+| Zod | Request validation |
+| Gemini AI | AI-powered task interactions |
+| Vitest | Automated testing |
+| Swagger | API documentation |
 
 ## Getting Started
 
@@ -25,34 +33,85 @@ A REST API built with **TypeScript, Fastify, Zod, and Vitest** to demonstrate cl
 
 - Node.js 22 or later
 - npm
+- PostgreSQL 18 or compatible version
+- Gemini API key
 
 ### Installation
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/kureshifaruq/ai-native-task-api.git
 cd ai-native-task-api
+```
+
+Install dependencies:
+
+```bash
 npm install
 ```
 
-### Run the development server
+### Environment Configuration
+
+Create your local environment files using the project's environment examples, if provided.
+
+Configure the required PostgreSQL connection details and Gemini API key according to the project's environment configuration.
+
+**Important:** Never commit `.env` files or expose API keys publicly.
+
+### Database Setup
+
+1. Install and start PostgreSQL.
+2. Create the development database.
+3. Configure the database connection in your environment file.
+4. Ensure the required task table is available.
+
+Use the project's existing database setup instructions and SQL scripts, if provided.
+
+### Run the Development Server
 
 ```bash
 npm run dev
 ```
 
-The API runs at `http://127.0.0.1:3000`.
+The API runs at:
 
-## API Endpoints
+`http://localhost:3000`
+
+## API Documentation
+
+Swagger UI is available at:
+
+`http://localhost:3000/docs`
+
+### REST API Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/health` | Check API health |
 | POST | `/tasks` | Create a task |
-| GET | `/tasks` | List tasks |
+| GET | `/tasks` | Retrieve all tasks |
+| GET | `/tasks/:id` | Retrieve a task by ID |
+| PATCH | `/tasks/:id` | Update an existing task |
+| DELETE | `/tasks/:id` | Delete a task |
 
-### Create a task
+### AI Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/ai/ask` | Process natural-language task requests using AI |
+| POST | `/ai/confirm-delete` | Confirm an AI-requested task deletion |
+
+AI deletion requires explicit confirmation before the task is deleted.
+
+## Example: Create a Task
 
 Request:
+
+```http
+POST /tasks
+Content-Type: application/json
+```
 
 ```json
 {
@@ -91,10 +150,22 @@ Run TypeScript type checking:
 npm run typecheck
 ```
 
-## Current Limitations
+Build the TypeScript project:
 
-- Tasks are stored in memory and are lost when the server restarts.
-- Authentication and persistent database storage are not yet implemented.
+```bash
+npm run build
+```
+
+## Project Goals
+
+This project is being developed to explore backend engineering and AI-native application development, including:
+
+- Building reliable REST APIs
+- Working with relational databases
+- Implementing structured validation and error handling
+- Integrating large language models
+- Designing safe AI-assisted actions
+- Writing maintainable and testable backend code
 
 ## License
 
