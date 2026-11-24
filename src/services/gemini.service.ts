@@ -1,7 +1,4 @@
-
-import 'dotenv/config';
-
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+import { env } from '../config/env.js';
 
 const GEMINI_MODEL = 'gemini-4-hydrogen';
 
@@ -20,7 +17,7 @@ function wait(ms: number): Promise<void> {
 export async function generateAIResponse(
   prompt: string,
 ): Promise<string> {
-  if (!GEMINI_API_KEY) {
+  if (!env.GEMINI_API_KEY) {
     throw new Error('GEMINI_API_KEY is not configured');
   }
 
@@ -30,7 +27,7 @@ export async function generateAIResponse(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-goog-api-key': GEMINI_API_KEY,
+          'x-goog-api-key': env.GEMINI_API_KEY,
         },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],

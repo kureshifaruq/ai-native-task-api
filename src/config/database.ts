@@ -1,29 +1,15 @@
 
-import 'dotenv/config';
 import { Pool } from 'pg';
-
-// Read database configuration from environment variables.
-const requiredEnv = [
-  'DB_HOST',
-  'DB_NAME',
-  'DB_USER',
-  'DB_PASSWORD',
-] as const;
-
-for (const key of requiredEnv) {
-  if (!process.env[key]) {
-    throw new Error(`Missing required environment variable: ${key}`);
-  }
-}
+import { env } from './env.js';
 
 // Create a reusable PostgreSQL connection pool.
 export const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT ?? 5432),
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  max: Number(process.env.DB_MAX_CONNECTIONS ?? 10),
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  database: env.DB_NAME,
+  user: env.DB_USER,
+  password: env.DB_PASSWORD,
+  max: env.DB_MAX_CONNECTIONS,
 });
 
 // Log unexpected errors on idle connections.
