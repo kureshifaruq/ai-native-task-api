@@ -279,4 +279,64 @@ describe('AI-native Task API', () => {
     expect(response.json().error.code).toBe('TASK_NOT_FOUND');
   });
 
+
+
+  it('returns 429 when the AI delete confirmation rate limit is exceeded', async () => {
+    let lastResponse = await app.inject({
+      method: 'POST',
+      url: '/ai/confirm-delete',
+      payload: {
+        taskId: '00000000-0000-4000-8000-000000000001',
+        confirm: false,
+      },
+    });
+
+    for (let i = 1; i < 11; i++) {
+      lastResponse = await app.inject({
+        method: 'POST',
+        url: '/ai/confirm-delete',
+        payload: {
+          taskId: '00000000-0000-4000-8000-000000000001',
+          confirm: false,
+        },
+      });
+    }
+
+    expect(lastResponse.statusCode).toBe(429);
+    expect(lastResponse.json().error.code).toBe(
+      'RATE_LIMIT_EXCEEDED',
+    );
+    expect(lastResponse.json().error.message).toBe(
+      'Too many requests. Please try again later.',
+    );
+  });
+
+
+  it('rejects request bodies larger than 1 MB', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/tasks',
+      headers: {
+        'content-type': 'application/json',
+      },
+      payload: JSON.stringify({
+        title: 'Test task',
+        description: 'a'.repeat(1_048_576),
+      }),
+    });
+
+    expect(response.statusCode).toBe(413);
+  });
+
+  it('includes security headers in API responses', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      url: '/health',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['x-content-type-options']).toBe('nosniff');
+    expect(response.headers['x-frame-options']).toBe('SAMEORIGIN');
+  });
+
 });
